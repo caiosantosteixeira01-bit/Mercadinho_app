@@ -1,23 +1,24 @@
-from db import get_connection
+from models import get_all_users
+import bcrypt
 
-def login(email, password):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT u.id, u.name, u.email, ut.type_name
-        FROM users u
-        JOIN user_types ut ON u.user_type_id = ut.id
-        WHERE email=? AND password=?
-    """, (email, password))
-    user = cursor.fetchone()
-    conn.close()
-    return user
+current_user = {}
 
-def can_create(logged_type, new_type):
-    if logged_type == "ADMIN":
-        return True
-    elif logged_type == "MOD" and new_type == "LIMITADO":
-        return True
+def login(email,password):
+    conn = get_all_users()
+    for u in conn:
+        user_id,name,user_email,phone,user_type,is_on = u
+        from db import get_connection
+        c = get_connection().cursor()
+        c.execute("SELECT password FROM users WHERE id=?", (user_id,))
+        hashed = c.fetchone()[0]
+        if user_email == email and bcrypt.checkpw(password.encode(), hashed):
+            global current_user
+            current_user = {
+                "id":user_id,
+                "name":name,
+                "email":email,
+                "type":user_type,
+                "is_on":is_on
+            }
+            return True
     return False
-
-
