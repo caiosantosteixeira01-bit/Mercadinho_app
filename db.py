@@ -1,6 +1,5 @@
-import sqlite3
+from models import init_db
 
-DB_NAME = "mercadinho.db"
-
-def get_connection():
-    return sqlite3.connect(DB_NAME)
+if __name__ == "__main__":
+    init_db()
+    print("✅ Banco de dados inicializado com sucesso!")

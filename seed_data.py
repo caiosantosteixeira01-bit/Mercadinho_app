@@ -1,24 +1,34 @@
-from models import User, Product
+from models import User, hash_password, get_connection, create_tables
 
 def seed():
-    # Usuários
-    users = [
-        ("Admin", "admin@mercadinho.com", "999999999", "admin123", 1),
-        ("Moderador", "mod@mercadinho.com", "888888888", "mod123", 2),
-        ("Limitado", "limitado@mercadinho.com", "777777777", "limit123", 3)
-    ]
-    for u in users:
-        User.create(*u)
+    # Garante que as tabelas existam
+    create_tables()
 
-    # Produtos
-    products = [
-        ("Arroz", "Alimentos", 50, 10.0, 15.0),
-        ("Feijão", "Alimentos", 30, 8.0, 12.0),
-        ("Leite", "Bebidas", 20, 4.0, 6.0)
-    ]
-    for p in products:
-        Product.create(*p)
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Verifica se já há usuários no banco
+    cursor.execute("SELECT COUNT(*) FROM users")
+    count = cursor.fetchone()[0]
+
+    if count == 0:
+        users = [
+            ("Administrador", "admin@mercado.com", "9999-0000", hash_password("admin123"), 1),
+            ("Moderador", "mod@mercado.com", "9999-0001", hash_password("mod123"), 2),
+            ("Limitado", "limitado@mercado.com", "9999-0002", hash_password("lim123"), 3)
+        ]
+
+        cursor.executemany(
+            "INSERT INTO users (name, email, phone, password, user_type_id) VALUES (?, ?, ?, ?, ?)",
+            users
+        )
+        conn.commit()
+        print("✅ Usuários de teste criados com sucesso!")
+    else:
+        print("ℹ️ Usuários já existentes no banco.")
+
+    conn.close()
+
 
 if __name__ == "__main__":
     seed()
-    print("Seed inicial criado!")
