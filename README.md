@@ -1,2 +1,1 @@
-# Mercadinho_app
-mercadinho que tem estoque e login com ´´Criptografia``
+# Mercadinho0.4
